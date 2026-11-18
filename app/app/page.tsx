@@ -6,8 +6,8 @@ export default async function Home() {
   const events = await getEvents();
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-8 sm:py-14">
-      <h1 className="display mb-6 flex items-center gap-4 text-5xl sm:text-7xl">
-        <Chevrons className="h-12 w-9 shrink-0 text-accent sm:h-16 sm:w-12" />
+      <h1 className="display mb-6 flex items-center gap-[0.25em] text-[clamp(2rem,10vw,4.5rem)]">
+        <Chevrons className="h-[0.9em] w-[0.7em] shrink-0 text-accent" />
         Upcoming events
       </h1>
       {events.length === 0 ? (

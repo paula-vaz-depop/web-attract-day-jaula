@@ -4,11 +4,14 @@ import { useRouter } from "next/navigation";
 import type { EventDetail, Seat } from "@/lib/api";
 import { reserveSeat } from "@/lib/actions";
 import { formatPrice } from "@/lib/format";
+import { SeatButton } from "./SeatButton";
+import { MobileSeatMap } from "./MobileSeatMap";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PREMIUM_ROWS = ["A", "B", "C"];
 // Wing | centre | wing, with an aisle column between each block.
 const ROW_GRID = "grid-cols-[2rem_repeat(5,minmax(0,1fr))_1.25rem_repeat(15,minmax(0,1fr))_1.25rem_repeat(5,minmax(0,1fr))_3.5rem]";
+// Seats 6 and 21 jump the aisle columns, otherwise auto-flow drops them into the gaps.
 const AISLE_AFTER: Record<number, string> = { 6: "col-start-8", 21: "col-start-24" };
 
 export function SeatMap({ event }: { event: EventDetail }) {
@@ -23,6 +26,11 @@ export function SeatMap({ event }: { event: EventDetail }) {
   // Derived, so a seat that turns reserved after a refresh drops out of the selection on its own.
   const selected = event.seats.find((s) => s.id === selectedId && s.status === "available") ?? null;
   const price = (n: number) => formatPrice(n, event.currency);
+  const seatLabel = (s: Seat) => `Seat ${s.id}, ${price(s.price)}${PREMIUM_ROWS.includes(s.row) ? ", premium" : ""}`;
+  const select = (id: string) => {
+    setNotice(null);
+    setSelectedId(id);
+  };
 
   const rows = useMemo(() => {
     const byRow = new Map<string, Seat[]>();
@@ -57,7 +65,11 @@ export function SeatMap({ event }: { event: EventDetail }) {
   return (
     <>
       <section aria-label="Seat map" className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-8">
-        <div className="overflow-x-auto pb-4">
+        {/* Both maps render; CSS picks one, so there's no layout flash on hydration. */}
+        <div className="md:hidden">
+          <MobileSeatMap rows={rows} selectedId={selected?.id ?? null} onSelect={select} price={price} label={seatLabel} />
+        </div>
+        <div className="hidden overflow-x-auto pb-4 md:block">
           <div className="mx-auto min-w-[720px] max-w-[1040px]">
             <div className="mx-auto mb-10 w-3/5 rounded-b-[3rem] bg-ink py-5 text-center text-sm font-bold tracking-[0.6em] text-paper">
               STAGE
@@ -72,12 +84,10 @@ export function SeatMap({ event }: { event: EventDetail }) {
                       <SeatButton
                         key={seat.id}
                         seat={seat}
-                        label={`Seat ${seat.id}, ${price(seat.price)}${premium ? ", premium" : ""}`}
+                        label={seatLabel(seat)}
                         selected={seat.id === selected?.id}
-                        onSelect={() => {
-                          setNotice(null);
-                          setSelectedId(seat.id);
-                        }}
+                        onSelect={() => select(seat.id)}
+                        className={AISLE_AFTER[seat.number] ?? ""}
                       />
                     ))}
                     <span className="text-right text-sm font-bold">{price(seats[0].price)}</span>
@@ -85,14 +95,14 @@ export function SeatMap({ event }: { event: EventDetail }) {
                 );
               })}
             </div>
-            <ul className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm">
-              <Legend swatch="border-2 border-ink bg-white">Available</Legend>
-              <Legend swatch="bg-taken">Reserved</Legend>
-              <Legend swatch="bg-accent">Your seat</Legend>
-              <li className="font-bold text-accent">Rows A–C: premium</li>
-            </ul>
           </div>
         </div>
+        <ul className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm">
+          <Legend swatch="border-2 border-ink bg-white">Available</Legend>
+          <Legend swatch="bg-taken">Reserved</Legend>
+          <Legend swatch="bg-accent">Your seat</Legend>
+          <li className="font-bold text-accent">Rows A–C: premium</li>
+        </ul>
       </section>
 
       <div className="sticky bottom-0 border-t-4 border-ink bg-paper">
@@ -124,7 +134,7 @@ export function SeatMap({ event }: { event: EventDetail }) {
           <form noValidate onSubmit={submit} className="p-6 sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 id="reserve-title" className="display text-4xl">Reserve seat {selected.id}</h2>
+                <h2 id="reserve-title" className="display text-[clamp(1.75rem,8vw,2.25rem)]">Reserve seat {selected.id}</h2>
                 <p className="mt-2 text-muted">{event.name} · {price(selected.price)}</p>
               </div>
               <button
@@ -165,26 +175,6 @@ export function SeatMap({ event }: { event: EventDetail }) {
         )}
       </dialog>
     </>
-  );
-}
-
-function SeatButton({ seat, label, selected, onSelect }: { seat: Seat; label: string; selected: boolean; onSelect: () => void }) {
-  const reserved = seat.status === "reserved";
-  const look = reserved
-    ? "bg-taken cursor-not-allowed"
-    : selected
-      ? "bg-accent border-2 border-accent scale-110"
-      : "bg-white border-2 border-ink hover:bg-accent/40 cursor-pointer";
-  return (
-    <button
-      type="button"
-      disabled={reserved}
-      aria-pressed={selected}
-      aria-label={reserved ? `Seat ${seat.id}, reserved` : label}
-      title={reserved ? `${seat.id} · reserved` : label}
-      onClick={onSelect}
-      className={`aspect-square rounded-[4px] transition focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-ink ${AISLE_AFTER[seat.number] ?? ""} ${look}`}
-    />
   );
 }
 

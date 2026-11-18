@@ -24,6 +24,7 @@ body {
     text-transform: uppercase;
     line-height: 0.92;
     letter-spacing: -0.01em;
+    overflow-wrap: anywhere; /* a long word wraps instead of pushing the page sideways */
   }
   .btn {
     @apply inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-bold uppercase tracking-[0.15em] transition-colors cursor-pointer focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed;
@@ -34,4 +35,12 @@ body {
   .btn-ghost {
     @apply border-2 border-ink hover:bg-ink hover:text-paper;
   }
+}
+
+@keyframes zoom-in {
+  from { transform: scale(0.35); opacity: 0; }
+}
+.animate-zoom-in { animation: zoom-in 260ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-zoom-in { animation: none; }
 }

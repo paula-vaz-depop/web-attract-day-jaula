@@ -13,7 +13,7 @@ export default async function ConfirmationPage({ params }: PageProps<"/confirmat
             <circle cx="12" cy="12" r="10" />
             <path d="M7 12.5l3.5 3.5L17 9" />
           </svg>
-          <h1 className="display text-4xl sm:text-6xl">You&apos;re going!</h1>
+          <h1 className="display text-[clamp(1.75rem,9vw,3.75rem)]">You&apos;re going!</h1>
         </div>
         <div className="p-6 sm:p-8">
           <h2 className="text-2xl font-bold">{event.name}</h2>
@@ -28,7 +28,7 @@ export default async function ConfirmationPage({ params }: PageProps<"/confirmat
         <div aria-hidden className="border-t-4 border-dashed border-ink" />
         <div className="p-6 sm:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Reference</p>
-          <p className="display mt-1 text-4xl tracking-wider">{ref}</p>
+          <p className="display mt-1 text-[clamp(1.75rem,9vw,2.25rem)] tracking-wider">{ref}</p>
           <p className="mt-4">We&apos;ve sent the details to <strong>{email}</strong></p>
           <Link href="/" className="btn btn-ghost mt-8">Back to all events</Link>
         </div>
