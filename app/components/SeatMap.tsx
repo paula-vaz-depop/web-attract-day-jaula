@@ -9,6 +9,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PREMIUM_ROWS = ["A", "B", "C"];
 // Wing | centre | wing, with an aisle column between each block.
 const ROW_GRID = "grid-cols-[2rem_repeat(5,minmax(0,1fr))_1.25rem_repeat(15,minmax(0,1fr))_1.25rem_repeat(5,minmax(0,1fr))_3.5rem]";
+const AISLE_AFTER: Record<number, string> = { 6: "col-start-8", 21: "col-start-24" };
 
 export function SeatMap({ event }: { event: EventDetail }) {
   const router = useRouter();
@@ -182,7 +183,7 @@ function SeatButton({ seat, label, selected, onSelect }: { seat: Seat; label: st
       aria-label={reserved ? `Seat ${seat.id}, reserved` : label}
       title={reserved ? `${seat.id} · reserved` : label}
       onClick={onSelect}
-      className={`aspect-square rounded-[4px] transition focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-ink ${look}`}
+      className={`aspect-square rounded-[4px] transition focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-ink ${AISLE_AFTER[seat.number] ?? ""} ${look}`}
     />
   );
 }
