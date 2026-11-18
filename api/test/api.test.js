@@ -4,8 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createApp } from '../src/app.js';
-import { createStore } from '../src/store.js';
+import { createApp } from '../dist/app.js';
 
 const seedPath = fileURLToPath(new URL('../../seed.json', import.meta.url));
 const HEADER = 'reference,eventId,seatId,email,createdAt\n';
@@ -20,17 +19,17 @@ const MIDNIGHT_INFO = {
 };
 
 let dataPath;
-let server;
+let app;
 let baseUrl;
 
 async function start() {
-  server = createApp(createStore({ seedPath, dataPath })).listen(0);
-  await new Promise((resolve) => server.once('listening', resolve));
-  baseUrl = `http://localhost:${server.address().port}/api`;
+  app = await createApp({ seedPath, dataPath });
+  await app.listen(0);
+  baseUrl = `http://localhost:${app.getHttpServer().address().port}/api`;
 }
 
 async function stop() {
-  await new Promise((resolve) => server.close(resolve));
+  await app.close();
 }
 
 async function call(method, url, body) {

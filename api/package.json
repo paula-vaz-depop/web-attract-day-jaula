@@ -6,10 +6,21 @@
     "node": ">=20"
   },
   "scripts": {
-    "start": "node src/server.js",
+    "build": "tsc",
+    "prestart": "tsc",
+    "start": "node dist/main.js",
+    "pretest": "tsc",
     "test": "node --test"
   },
   "dependencies": {
-    "express": "5.3.0"
+    "@nestjs/common": "12.3.3",
+    "@nestjs/core": "12.3.3",
+    "@nestjs/platform-express": "12.3.3",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.43",
+    "typescript": "5.9.3"
   }
 }

@@ -16,7 +16,7 @@ Only build what's in the wireframes and requirements. Product *will* change requ
 
 ## Hard rules (from TECHNICAL.md)
 
-- `api/`: Node + Express, its own service on `API_PORT`.
+- `api/`: Node + Nest.js, its own service on `API_PORT`.
 - `app/`: Next.js. It talks to the API **only over HTTP**, via `API_URL`. It never reads `seed.json` or the CSV.
 - Reservations live in a CSV at `DATA_PATH` (locally `database.csv`, which is committed empty). The file has a header row and must survive a restart. If it's missing or empty, the API creates it.
 - Events and seats come from `seed.json`.
@@ -64,7 +64,7 @@ Base path `/api`. JSON everywhere.
 2. The **confirmation page** loads its data from `GET /api/reservations/:reference`, so it still works after a refresh. The route is `/confirmation/:reference`.
 3. **Email uniqueness** is per event, compared trimmed and case-insensitive. The same email can book other events.
 4. **Seat status** = its status in the seed, overlaid with the CSV reservations. Seats that are reserved in the seed stay reserved.
-5. **Races:** if two people go for the same seat, exactly one wins and the other gets `409 SEAT_UNAVAILABLE`. The UI then shows the message, refetches the seat map and clears the selection. In Express, do the check and the CSV append with **no `await` in between**, or put them behind a simple in-process lock.
+5. **Races:** if two people go for the same seat, exactly one wins and the other gets `409 SEAT_UNAVAILABLE`. The UI then shows the message, refetches the seat map and clears the selection. In the API, do the check and the CSV append with **no `await` in between**, or put them behind a simple in-process lock.
 6. **Formatting** of money and dates happens on the client. The API sends raw numbers plus `currency`.
 7. **The UI draws the layout:** the 5 | 15 | 5 aisle split, the row price labels, the "Rows A–C: premium" legend and the "Your seat" highlight all come from `row`, `number` and `price`. "Your seat" is selection state in the client, not an API status.
 8. Email is checked on the client **and** in the API.
@@ -72,8 +72,8 @@ Base path `/api`. JSON everywhere.
 
 ## The API (`api/`), built
 
-- Express 5, plain JS (ESM), no build step. Run it with `cd api && npm install && API_PORT=4000 DATA_PATH=../database.csv npm start`. Run the tests with `npm test`; they use `node:test` and cover every endpoint and error code.
-- Files: `src/store.js` (loads the seed, holds state in memory, appends to the CSV), `src/app.js` (routes and errors), `src/server.js` (reads the env vars).
+- Nest.js 12 on `@nestjs/platform-express`, TypeScript (ESM). `npm start` and `npm test` compile to `dist/` with `tsc` first, so there is no manual build step. Run it with `cd api && npm install && API_PORT=4000 DATA_PATH=../database.csv npm start`. The tests use `node:test` against the compiled app and cover every endpoint and error code.
+- Files: `src/store.ts` (the `Store` provider: loads the seed, holds state in memory, appends to the CSV), `src/app.ts` (one module, one controller, the global exception filter that produces the `{ error: { code, message } }` shape, open CORS, JSON-only body parsing), `src/main.ts` (reads the env vars and listens).
 - The CSV columns are `reference,eventId,seatId,email,createdAt`. Emails are stored trimmed and lowercased.
 - CORS is open (`*`), so the browser can call the API directly from the pop-up.
 - The data lives in one process. Don't run two API instances against the same CSV.

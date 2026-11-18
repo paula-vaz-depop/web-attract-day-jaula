@@ -6,7 +6,7 @@ Each line can be tested. Tick it off when it's done and checked.
 ## Technical (TR)
 
 - [ ] **TR-1** Web app is Next.js, in `app/`.
-- [x] **TR-2** API is Node + Express, in `api/`, running as its own service on `API_PORT`.
+- [x] **TR-2** API is Node + Nest.js, in `api/`, running as its own service on `API_PORT`.
 - [ ] **TR-3** The web app talks to the API only over HTTP, at `API_URL`. It never reads `seed.json` or the CSV directly.
 - [x] **TR-4** Events and seats are loaded from `seed.json`.
 - [x] **TR-5** Reservations are stored in a CSV at `DATA_PATH`, with a header row. They survive an API restart.
