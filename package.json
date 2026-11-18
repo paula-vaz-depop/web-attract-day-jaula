@@ -1,0 +1,7 @@
+{
+  "name": "team-day-ticketmaster",
+  "private": true,
+  "scripts": {
+    "start": "echo \"Wire me up: start your API (api/) and web app (app/). See TECHNICAL.md.\" && exit 1"
+  }
+}

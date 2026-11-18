@@ -1,0 +1,395 @@
+openapi: 3.1.0
+info:
+  title: Tickets API
+  version: 0.1.0
+  description: Event listing, seat map and single-seat reservation.
+security: []
+servers:
+  - url: /api
+tags:
+  - name: Events
+  - name: Reservations
+
+paths:
+  /events:
+    get:
+      tags: [Events]
+      operationId: listEvents
+      summary: List upcoming events
+      description: Sorted by startsAt ascending.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [events]
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventSummary'
+              example:
+                events:
+                  - id: midnight-arcade
+                    name: The Midnight Arcade
+                    venue: O2 Forum
+                    city: London
+                    startsAt: '2026-12-05T20:00:00+00:00'
+                    currency: GBP
+                    fromPrice: 40
+                    seatsLeft: 350
+                    soldOut: false
+                  - id: velvet-static
+                    name: Velvet Static
+                    venue: Paradiso
+                    city: Amsterdam
+                    startsAt: '2026-12-11T19:30:00+01:00'
+                    currency: EUR
+                    fromPrice: 35
+                    seatsLeft: 500
+                    soldOut: false
+                  - id: neon-harbour
+                    name: Neon Harbour
+                    venue: Apollo
+                    city: Manchester
+                    startsAt: '2026-12-13T20:00:00+00:00'
+                    currency: GBP
+                    fromPrice: null
+                    seatsLeft: 0
+                    soldOut: true
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /events/{eventId}:
+    parameters:
+      - $ref: '#/components/parameters/EventId'
+    get:
+      tags: [Events]
+      operationId: getEvent
+      summary: Get an event with its seat map
+      description: Seats are ordered by row, then number. Sold-out events are returned normally.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDetail'
+              example:
+                id: midnight-arcade
+                name: The Midnight Arcade
+                venue: O2 Forum
+                city: London
+                startsAt: '2026-12-05T20:00:00+00:00'
+                currency: GBP
+                fromPrice: 40
+                seatsLeft: 350
+                soldOut: false
+                seats:
+                  - { id: A1, row: A, number: 1, price: 105, status: reserved }
+                  - { id: A3, row: A, number: 3, price: 105, status: available }
+        '404':
+          $ref: '#/components/responses/EventNotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /events/{eventId}/reservations:
+    parameters:
+      - $ref: '#/components/parameters/EventId'
+    post:
+      tags: [Reservations]
+      operationId: createReservation
+      summary: Reserve one seat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+            example:
+              seatId: H13
+              email: fan@example.com
+      responses:
+        '201':
+          description: Reserved
+          headers:
+            Location:
+              description: URL of the new reservation.
+              schema:
+                type: string
+                example: /api/reservations/TKT-7F3K2
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+              examples:
+                reservation:
+                  $ref: '#/components/examples/Reservation'
+        '400':
+          description: |
+            INVALID_EMAIL: email is missing or invalid.
+            INVALID_REQUEST: body isn't JSON, or seatId is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidEmail:
+                  value:
+                    error: { code: INVALID_EMAIL, message: That email doesn't look right }
+                invalidRequest:
+                  value:
+                    error: { code: INVALID_REQUEST, message: 'Something went wrong with that request, please try again' }
+        '404':
+          description: Event or seat not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                eventNotFound:
+                  value:
+                    error: { code: EVENT_NOT_FOUND, message: We couldn't find that event }
+                seatNotFound:
+                  value:
+                    error: { code: SEAT_NOT_FOUND, message: We couldn't find that seat }
+        '409':
+          description: |
+            EMAIL_ALREADY_RESERVED: this email (trimmed, case-insensitive) already holds a seat for the event.
+            SEAT_UNAVAILABLE: the seat is already reserved; refetch the seat map.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                emailAlreadyReserved:
+                  value:
+                    error: { code: EMAIL_ALREADY_RESERVED, message: This email already has a seat for this event }
+                seatUnavailable:
+                  value:
+                    error: { code: SEAT_UNAVAILABLE, message: 'Sorry, that seat has just been taken' }
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /reservations/{reference}:
+    parameters:
+      - name: reference
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Reference'
+    get:
+      tags: [Reservations]
+      operationId: getReservation
+      summary: Get a reservation by reference
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+              examples:
+                reservation:
+                  $ref: '#/components/examples/Reservation'
+        '404':
+          description: Reservation not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: { code: RESERVATION_NOT_FOUND, message: We couldn't find that reservation }
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  parameters:
+    EventId:
+      name: eventId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: midnight-arcade
+
+  responses:
+    EventNotFound:
+      description: Event not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: { code: EVENT_NOT_FOUND, message: We couldn't find that event }
+    InternalError:
+      description: Unexpected server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: { code: INTERNAL_ERROR, message: 'Something went wrong on our side, please try again' }
+
+  examples:
+    Reservation:
+      value:
+        reference: TKT-7F3K2
+        email: fan@example.com
+        event:
+          id: midnight-arcade
+          name: The Midnight Arcade
+          venue: O2 Forum
+          city: London
+          startsAt: '2026-12-05T20:00:00+00:00'
+          currency: GBP
+        seat:
+          id: H13
+          row: H
+          number: 13
+          price: 75
+
+  schemas:
+    Currency:
+      type: string
+      enum: [GBP, EUR]
+
+    Price:
+      type: integer
+      minimum: 0
+      description: Whole units of the event's currency.
+
+    Reference:
+      type: string
+      pattern: '^TKT-[A-Z0-9]{5}$'
+      example: TKT-7F3K2
+
+    EventInfo:
+      type: object
+      required: [id, name, venue, city, startsAt, currency]
+      properties:
+        id:
+          type: string
+          example: midnight-arcade
+        name:
+          type: string
+        venue:
+          type: string
+        city:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+          description: ISO 8601 with the venue's UTC offset; display in that offset.
+        currency:
+          $ref: '#/components/schemas/Currency'
+
+    EventSummary:
+      allOf:
+        - $ref: '#/components/schemas/EventInfo'
+        - type: object
+          required: [fromPrice, seatsLeft, soldOut]
+          properties:
+            fromPrice:
+              description: Cheapest available seat; null when sold out.
+              oneOf:
+                - $ref: '#/components/schemas/Price'
+                - type: 'null'
+            seatsLeft:
+              type: integer
+              minimum: 0
+            soldOut:
+              type: boolean
+              description: True when seatsLeft is 0.
+
+    EventDetail:
+      allOf:
+        - $ref: '#/components/schemas/EventSummary'
+        - type: object
+          required: [seats]
+          properties:
+            seats:
+              type: array
+              items:
+                $ref: '#/components/schemas/Seat'
+
+    Seat:
+      type: object
+      required: [id, row, number, price, status]
+      properties:
+        id:
+          type: string
+          example: H13
+        row:
+          type: string
+          pattern: '^[A-Z]$'
+        number:
+          type: integer
+          minimum: 1
+        price:
+          $ref: '#/components/schemas/Price'
+        status:
+          type: string
+          enum: [available, reserved]
+
+    ReservationRequest:
+      type: object
+      required: [seatId, email]
+      additionalProperties: false
+      properties:
+        seatId:
+          type: string
+          example: H13
+        email:
+          type: string
+          maxLength: 254
+          example: fan@example.com
+
+    Reservation:
+      type: object
+      required: [reference, email, event, seat]
+      properties:
+        reference:
+          $ref: '#/components/schemas/Reference'
+        email:
+          type: string
+          format: email
+        event:
+          $ref: '#/components/schemas/EventInfo'
+        seat:
+          type: object
+          required: [id, row, number, price]
+          properties:
+            id:
+              type: string
+            row:
+              type: string
+            number:
+              type: integer
+            price:
+              $ref: '#/components/schemas/Price'
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - INVALID_REQUEST
+                - INVALID_EMAIL
+                - EVENT_NOT_FOUND
+                - SEAT_NOT_FOUND
+                - EMAIL_ALREADY_RESERVED
+                - SEAT_UNAVAILABLE
+                - RESERVATION_NOT_FOUND
+                - INTERNAL_ERROR
+            message:
+              type: string
+              description: User-facing copy, safe to display as-is.
