@@ -12,9 +12,9 @@ Each line can be tested. Tick it off when it's done and checked.
 - [x] **TR-5** Reservations are stored in a CSV at `DATA_PATH`, with a header row. They survive an API restart.
 - [x] **TR-6** If the CSV is missing or empty when the API starts, it is created with a header row.
 - [x] **TR-7** A seat's status = its seed status, overlaid with reservations from the CSV.
-- [ ] **TR-8** `npm start` in the repo root starts both the API and the app.
+- [x] **TR-8** `npm start` in the repo root starts both the API and the app.
 - [ ] **TR-9** Ports, API URL and data path come only from `APP_PORT`, `API_PORT`, `API_URL` and `DATA_PATH`. Nothing is hard-coded.
-- [ ] **TR-10** Runs on Node 20+ with npm. No Docker, no database server.
+- [x] **TR-10** Runs on Node 20+ with npm. No Docker, no database server.
 
 ## API (API), per [openapi.yaml](openapi.yaml)
 
