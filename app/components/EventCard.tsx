@@ -12,8 +12,8 @@ export function EventCard({ event, index }: { event: EventSummary; index: number
       }`}
     >
       <Poster event={event} index={index} />
-      <div className="flex flex-1 flex-col gap-1 border-t-4 border-ink p-5">
-        <h2 className="text-2xl font-bold leading-tight">
+      <div className="flex flex-1 flex-col gap-0.5 border-t-4 border-ink p-4 sm:gap-1 sm:p-5">
+        <h2 className="text-xl font-bold leading-tight sm:text-2xl">
           {soldOut ? (
             event.name
           ) : (
@@ -23,9 +23,11 @@ export function EventCard({ event, index }: { event: EventSummary; index: number
             </Link>
           )}
         </h2>
-        <p className="text-muted">{event.venue}, {event.city}</p>
-        <p className="text-muted">{formatWhen(event.startsAt)}</p>
-        <div className="mt-auto flex items-end justify-between gap-4 pt-5">
+        <p className="text-muted">
+          {event.venue}, {event.city}
+          <span className="sm:block"><span className="sm:hidden"> · </span>{formatWhen(event.startsAt)}</span>
+        </p>
+        <div className="mt-auto flex items-end justify-between gap-4 pt-3 sm:pt-5">
           {soldOut ? (
             <>
               <p className="display text-2xl">Sold out</p>
