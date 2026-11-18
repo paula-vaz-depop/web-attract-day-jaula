@@ -6,30 +6,30 @@ Each line can be tested. Tick it off when it's done and checked.
 ## Technical (TR)
 
 - [ ] **TR-1** Web app is Next.js, in `app/`.
-- [ ] **TR-2** API is Node + Express, in `api/`, running as its own service on `API_PORT`.
+- [x] **TR-2** API is Node + Express, in `api/`, running as its own service on `API_PORT`.
 - [ ] **TR-3** The web app talks to the API only over HTTP, at `API_URL`. It never reads `seed.json` or the CSV directly.
-- [ ] **TR-4** Events and seats are loaded from `seed.json`.
-- [ ] **TR-5** Reservations are stored in a CSV at `DATA_PATH`, with a header row. They survive an API restart.
-- [ ] **TR-6** If the CSV is missing or empty when the API starts, it is created with a header row.
-- [ ] **TR-7** A seat's status = its seed status, overlaid with reservations from the CSV.
+- [x] **TR-4** Events and seats are loaded from `seed.json`.
+- [x] **TR-5** Reservations are stored in a CSV at `DATA_PATH`, with a header row. They survive an API restart.
+- [x] **TR-6** If the CSV is missing or empty when the API starts, it is created with a header row.
+- [x] **TR-7** A seat's status = its seed status, overlaid with reservations from the CSV.
 - [ ] **TR-8** `npm start` in the repo root starts both the API and the app.
 - [ ] **TR-9** Ports, API URL and data path come only from `APP_PORT`, `API_PORT`, `API_URL` and `DATA_PATH`. Nothing is hard-coded.
 - [ ] **TR-10** Runs on Node 20+ with npm. No Docker, no database server.
 
 ## API (API), per [openapi.yaml](openapi.yaml)
 
-- [ ] **API-1** `GET /api/events` returns every event with `fromPrice` (cheapest available seat, `null` when sold out), `seatsLeft` and `soldOut`, sorted by `startsAt`.
-- [ ] **API-2** `GET /api/events/:eventId` returns the event plus all 500 seats in row/number order. Unknown id → `404 EVENT_NOT_FOUND`.
-- [ ] **API-3** `POST /api/events/:eventId/reservations` with `{seatId, email}` → `201` with the Reservation and a `Location` header.
-- [ ] **API-4** Invalid email → `400 INVALID_EMAIL`. Nothing is written.
-- [ ] **API-5** Unknown event or seat → `404 EVENT_NOT_FOUND` / `SEAT_NOT_FOUND`.
-- [ ] **API-6** The email already has a seat at this event (trimmed, case-insensitive) → `409 EMAIL_ALREADY_RESERVED`. The same email can still book other events.
-- [ ] **API-7** Seat already reserved → `409 SEAT_UNAVAILABLE`. When two requests race for one seat, exactly one wins.
-- [ ] **API-8** `GET /api/reservations/:reference` returns the Reservation. Unknown → `404 RESERVATION_NOT_FOUND`.
-- [ ] **API-9** Every error uses `{ error: { code, message } }`, with `message` written so it can be shown to a fan as-is.
-- [ ] **API-10** References are unique and match `TKT-XXXXX`.
-- [ ] **API-11** Malformed body (not JSON, or `seatId` missing) → `400 INVALID_REQUEST`. Nothing is written.
-- [ ] **API-12** Any unexpected error → `500 INTERNAL_ERROR` in the standard error shape. Never an HTML or Express default error page.
+- [x] **API-1** `GET /api/events` returns every event with `fromPrice` (cheapest available seat, `null` when sold out), `seatsLeft` and `soldOut`, sorted by `startsAt`.
+- [x] **API-2** `GET /api/events/:eventId` returns the event plus all 500 seats in row/number order. Unknown id → `404 EVENT_NOT_FOUND`.
+- [x] **API-3** `POST /api/events/:eventId/reservations` with `{seatId, email}` → `201` with the Reservation and a `Location` header.
+- [x] **API-4** Invalid email → `400 INVALID_EMAIL`. Nothing is written.
+- [x] **API-5** Unknown event or seat → `404 EVENT_NOT_FOUND` / `SEAT_NOT_FOUND`.
+- [x] **API-6** The email already has a seat at this event (trimmed, case-insensitive) → `409 EMAIL_ALREADY_RESERVED`. The same email can still book other events.
+- [x] **API-7** Seat already reserved → `409 SEAT_UNAVAILABLE`. When two requests race for one seat, exactly one wins.
+- [x] **API-8** `GET /api/reservations/:reference` returns the Reservation. Unknown → `404 RESERVATION_NOT_FOUND`.
+- [x] **API-9** Every error uses `{ error: { code, message } }`, with `message` written so it can be shown to a fan as-is.
+- [x] **API-10** References are unique and match `TKT-XXXXX`.
+- [x] **API-11** Malformed body (not JSON, or `seatId` missing) → `400 INVALID_REQUEST`. Nothing is written.
+- [x] **API-12** Any unexpected error → `500 INTERNAL_ERROR` in the standard error shape. Never an HTML or Express default error page.
 
 ## Event directory `/` (ED)
 

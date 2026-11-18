@@ -70,9 +70,16 @@ Base path `/api`. JSON everywhere.
 8. Email is checked on the client **and** in the API.
 9. **Out of scope:** auth, seat holds/timers, multiple seats, cancelling, actually sending emails.
 
+## The API (`api/`), built
+
+- Express 5, plain JS (ESM), no build step. Run it with `cd api && npm install && API_PORT=4000 DATA_PATH=../database.csv npm start`. Run the tests with `npm test`; they use `node:test` and cover every endpoint and error code.
+- Files: `src/store.js` (loads the seed, holds state in memory, appends to the CSV), `src/app.js` (routes and errors), `src/server.js` (reads the env vars).
+- The CSV columns are `reference,eventId,seatId,email,createdAt`. Emails are stored trimmed and lowercased.
+- CORS is open (`*`), so the browser can call the API directly from the pop-up.
+- The data lives in one process. Don't run two API instances against the same CSV.
+
 ## Still open (decide as a team)
 
-- **CSV columns.** Proposal: `reference,eventId,seatId,email,createdAt`.
 - **How `npm start` runs both services.** E.g. `concurrently` in the root, or npm workspaces, plus default env values for local runs.
 - **The work split.** Suggested lanes, all working against openapi.yaml:
   - **API:** Express app, seed loading, CSV store, the 4 endpoints, error middleware (API-*, TR-4…7)
