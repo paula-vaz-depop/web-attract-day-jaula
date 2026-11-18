@@ -2,6 +2,7 @@
 import { useRef, useState, type TouchList } from "react";
 import type { Seat } from "@/lib/api";
 import { SeatButton } from "./SeatButton";
+import { onSeatKeyDown } from "./seatKeys";
 
 // Five 5-wide columns x front/back = 10 sections of 50 seats. col starts skip the aisle columns in the overview grid.
 const BLOCKS = [
@@ -78,6 +79,8 @@ export function MobileSeatMap({ rows, selectedId, onSelect, price, label }: {
   }
 
   const groupRows = seatsOf(zoom);
+  const free = groupRows.flatMap(([, s]) => s).filter((s) => s.status === "available");
+  const tabStopId = free.find((s) => s.id === selectedId)?.id ?? free[0]?.id;
   return (
     <div
       className="animate-zoom-in"
@@ -100,14 +103,14 @@ export function MobileSeatMap({ rows, selectedId, onSelect, price, label }: {
         </p>
       </div>
       <div className="pb-2">
-        <div className="mx-auto grid w-max items-center gap-1.5" style={{ gridTemplateColumns: "3.25rem repeat(5, 2.5rem)" }}>
+        <div onKeyDown={onSeatKeyDown} className="mx-auto grid w-max items-center gap-1.5" style={{ gridTemplateColumns: "3.25rem repeat(5, 2.5rem)" }}>
           {groupRows.map(([row, seats]) => (
             <div key={row} className="contents">
               <span className={`sticky left-0 z-10 bg-paper pr-1 text-xs font-bold ${row <= "C" ? "text-accent" : ""}`}>
                 {row} <span className="font-normal text-muted">{price(seats[0].price)}</span>
               </span>
               {seats.map((seat) => (
-                <SeatButton key={seat.id} seat={seat} label={label(seat)} selected={seat.id === selectedId} onSelect={() => onSelect(seat.id)} />
+                <SeatButton key={seat.id} seat={seat} label={label(seat)} selected={seat.id === selectedId} onSelect={() => onSelect(seat.id)} tabStop={seat.id === tabStopId} />
               ))}
             </div>
           ))}

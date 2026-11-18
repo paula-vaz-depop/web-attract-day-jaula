@@ -8,7 +8,7 @@ export function EventCard({ event, index }: { event: EventSummary; index: number
   return (
     <article
       className={`group relative flex h-full flex-col border-4 border-ink bg-white transition-transform ${
-        soldOut ? "opacity-70" : "hover:-translate-y-1 hover:shadow-[8px_8px_0_var(--color-ink)]"
+        soldOut ? "opacity-70" : "hover:-translate-y-1 hover:shadow-[8px_8px_0_var(--color-ink)] has-[:focus-visible]:-translate-y-1 has-[:focus-visible]:shadow-[8px_8px_0_var(--color-accent)] has-[:focus-visible]:border-accent"
       }`}
     >
       <Poster event={event} index={index} />
@@ -18,7 +18,7 @@ export function EventCard({ event, index }: { event: EventSummary; index: number
             event.name
           ) : (
             // Stretched link: the whole card is clickable, but there's one link for screen readers.
-            <Link href={`/event/${encodeURIComponent(event.id)}`} className="after:absolute after:inset-0 focus-visible:outline-none group-has-[:focus-visible]:underline">
+            <Link href={`/event/${encodeURIComponent(event.id)}`} className="after:absolute after:inset-0 focus-visible:outline-none">
               {event.name}
             </Link>
           )}
@@ -39,7 +39,7 @@ export function EventCard({ event, index }: { event: EventSummary; index: number
                 <p className="text-xl font-bold">From {formatPrice(event.fromPrice ?? 0, event.currency)}</p>
                 <p className="text-sm text-muted">{event.seatsLeft} seats left</p>
               </div>
-              <span className="btn btn-primary group-hover:bg-accent" aria-hidden>View</span>
+              <span className="btn btn-primary group-hover:bg-accent group-has-[:focus-visible]:bg-accent" aria-hidden>View</span>
             </>
           )}
         </div>

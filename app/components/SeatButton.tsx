@@ -1,7 +1,7 @@
 import type { Seat } from "@/lib/api";
 
-export function SeatButton({ seat, label, selected, onSelect, className = "" }: {
-  seat: Seat; label: string; selected: boolean; onSelect: () => void; className?: string;
+export function SeatButton({ seat, label, selected, onSelect, tabStop, className = "" }: {
+  seat: Seat; label: string; selected: boolean; onSelect: () => void; tabStop: boolean; className?: string;
 }) {
   const reserved = seat.status === "reserved";
   const look = reserved
@@ -17,6 +17,10 @@ export function SeatButton({ seat, label, selected, onSelect, className = "" }: 
       aria-label={reserved ? `Seat ${seat.id}, reserved` : label}
       title={reserved ? `${seat.id} · reserved` : label}
       onClick={onSelect}
+      tabIndex={tabStop ? 0 : -1}
+      data-seat={seat.id}
+      data-row={seat.row}
+      data-num={seat.number}
       className={`aspect-square rounded-[4px] transition focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-ink ${look} ${className}`}
     />
   );

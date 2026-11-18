@@ -6,6 +6,7 @@ import { reserveSeat } from "@/lib/actions";
 import { formatPrice } from "@/lib/format";
 import { SeatButton } from "./SeatButton";
 import { MobileSeatMap } from "./MobileSeatMap";
+import { onSeatKeyDown } from "./seatKeys";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PREMIUM_ROWS = ["A", "B", "C"];
@@ -31,6 +32,9 @@ export function SeatMap({ event }: { event: EventDetail }) {
     setNotice(null);
     setSelectedId(id);
   };
+
+  // One Tab stop for the whole map (selected seat, else first free one); arrows do the rest.
+  const tabStopId = selected?.id ?? event.seats.find((s) => s.status === "available")?.id;
 
   const rows = useMemo(() => {
     const byRow = new Map<string, Seat[]>();
@@ -74,7 +78,7 @@ export function SeatMap({ event }: { event: EventDetail }) {
             <div className="mx-auto mb-10 w-3/5 rounded-b-[3rem] bg-ink py-5 text-center text-sm font-bold tracking-[0.6em] text-paper">
               STAGE
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5" onKeyDown={onSeatKeyDown}>
               {rows.map(([row, seats]) => {
                 const premium = PREMIUM_ROWS.includes(row);
                 return (
@@ -87,6 +91,7 @@ export function SeatMap({ event }: { event: EventDetail }) {
                         label={seatLabel(seat)}
                         selected={seat.id === selected?.id}
                         onSelect={() => select(seat.id)}
+                        tabStop={seat.id === tabStopId}
                         className={AISLE_AFTER[seat.number] ?? ""}
                       />
                     ))}
@@ -103,6 +108,7 @@ export function SeatMap({ event }: { event: EventDetail }) {
           <Legend swatch="bg-accent">Your seat</Legend>
           <li className="font-bold text-accent">Rows A–C: premium</li>
         </ul>
+        <p className="mt-3 hidden text-center text-xs text-muted md:block">Use the arrow keys to move between seats, Enter to pick one.</p>
       </section>
 
       <div className="sticky bottom-0 border-t-4 border-ink bg-paper">
